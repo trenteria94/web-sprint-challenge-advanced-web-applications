@@ -58,7 +58,27 @@ export default function App() {
     // to the Articles screen. Don't forget to turn off the spinner!
   }
 
-  const getArticles = () => {
+  const getArticles = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      logout()
+    } else {
+    setMessage('')
+    setSpinnerOn(true)
+    try {
+      const { data } = await axios.get(
+        articlesUrl,
+      { headers: { Authorization: token } }
+    );
+      setMessage(data.message)
+      setSpinnerOn(false)
+      setArticles(data.articles)
+   
+    }
+    
+    catch(err) {
+      console.log(err)
+    }
     // ✨ implement
     // We should flush the message state, turn on the spinner
     // and launch an authenticated request to the proper endpoint.
@@ -75,6 +95,7 @@ export default function App() {
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
   }
+  }
 
   const updateArticle = ({ article_id, article }) => {
     // ✨ implement
@@ -89,7 +110,8 @@ export default function App() {
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
       <Spinner />
-      <Message />
+      <Message 
+      message={message}/>
       <button id="logout" onClick={logout}>Logout from app</button>
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}
         <h1>Advanced Web Applications</h1>
@@ -102,7 +124,10 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm />
-              <Articles />
+              <Articles 
+              getArticles={getArticles}
+              articles={articles}
+              />
             </>
           } />
         </Routes>
