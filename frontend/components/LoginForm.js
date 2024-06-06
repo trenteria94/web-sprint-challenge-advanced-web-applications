@@ -21,6 +21,11 @@ export default function LoginForm({ login }) {
   }
 
   const isDisabled = () => {
+    if (values.username.trim().length < 3 || values.password.trim().length < 8) {
+      return true
+    } else {
+      return false
+    }
     // ✨ implement
     // Trimmed username must be >= 3, and
     // trimmed password must be >= 8 for

@@ -9,19 +9,15 @@ export default function Articles({ articles, getArticles, deleteArticle, setCurr
 
   useEffect(() => {
     getArticles()
-    
     // ✨ grab the articles here, on first render only
   },[])
-
   return (
     // ✨ fix the JSX: replace `Function.prototype` with actual functions
     // and use the articles prop to generate articles
     <div className="articles">
       <h2>Articles</h2>
       {
-        !articles.length
-          ? 'No articles yet'
-          : articles.map(art => {
+         articles && articles.map(art => {
             return (
               <div className="article" key={art.article_id}>
                 <div>
@@ -30,8 +26,8 @@ export default function Articles({ articles, getArticles, deleteArticle, setCurr
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button disabled={true} onClick={Function.prototype}>Edit</button>
-                  <button disabled={true} onClick={Function.prototype}>Delete</button>
+                  <button disabled={false} onClick={() => setCurrentArticleId(art.article_id)}>Edit</button>
+                  <button disabled={false} onClick={() => deleteArticle(art.article_id)}>Delete</button>
                 </div>
               </div>
             )

@@ -48,6 +48,7 @@ export default function App() {
     }
     catch(err) {
       console.log(err)
+      redirectToLogin()
     }
 
     // ✨ implement
@@ -66,18 +67,21 @@ export default function App() {
     setMessage('')
     setSpinnerOn(true)
     try {
-      const { data } = await axios.get(
+      const response  = await axios.get(
         articlesUrl,
       { headers: { Authorization: token } }
     );
-      setMessage(data.message)
+      setArticles(response.data.articles)
+      setMessage(response.data.message)
       setSpinnerOn(false)
-      setArticles(data.articles)
+    }  
    
-    }
     
     catch(err) {
-      console.log(err)
+      console.log(err.data)
+      setSpinnerOn(false)
+      redirectToLogin()
+      
     }
     // ✨ implement
     // We should flush the message state, turn on the spinner
@@ -88,28 +92,97 @@ export default function App() {
     // if it's a 401 the token might have gone bad, and we should redirect to login.
     // Don't forget to turn off the spinner!
   }
+}
 
-  const postArticle = article => {
+  const postArticle = async ({ title, text, topic }) => {
+    
+    const token = localStorage.getItem('token')
+    if (!token) {
+      logout()
+    } else {
+    setMessage('')
+    setSpinnerOn(true)
+    try {
+      const  data  = await axios.post(
+        articlesUrl,
+        { title, text, topic },
+      { headers: { Authorization: token } }
+    );
+      setArticles(articles.concat(data.data.article))
+      setSpinnerOn(false)
+      setMessage(data.data.message)
+      
+      
+      
+      setCurrentArticleId(null)
+    }
+    
+    catch(err) {
+      console.log(err.data)
+      setSpinnerOn(false)
+      redirectToLogin()
+      
+    }
     // ✨ implement
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
   }
-  }
+}
+  
 
-  const updateArticle = ({ article_id, article }) => {
+  const updateArticle = async ({ article_id, title, text, topic }) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      logout()
+    } else {
+    setMessage('')
+    setSpinnerOn(true)
+    try {
+      const { data } = await axios.put(
+        `http://localhost:9000/api/articles/${article_id}`,
+        { title, text, topic },
+      { headers: { Authorization: token } }
+    );
+      setMessage(data.message)
+      getArticles()
+      setCurrentArticleId(null)
+    }
+    
+    catch(err) {
+      setSpinnerOn(false)
+      redirectToLogin()
+    }
     // ✨ implement
     // You got this!
   }
-
-  const deleteArticle = article_id => {
+  }
+  const deleteArticle = async article_id => {
+    const token = localStorage.getItem('token')
     // ✨ implement
+    setMessage('')
+    setSpinnerOn(true)
+    try {
+      const { data } = await axios.delete(`http://localhost:9000/api/articles/${article_id}`,
+      { headers: { Authorization: token } }
+      )
+      setMessage(data.message)
+      setSpinnerOn(false)
+      setArticles(data.articles)
+      getArticles()
+    }
+    catch(err) {
+      console.log(err.data.message)
+      redirectToLogin()
+    }
   }
 
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
-      <Spinner />
+      <Spinner 
+      on={spinnerOn}
+      />
       <Message 
       message={message}/>
       <button id="logout" onClick={logout}>Logout from app</button>
@@ -123,10 +196,19 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm />
+              <ArticleForm 
+              postArticle={postArticle}
+              currentArticle={currentArticleId && articles.find(art => art.article_id == currentArticleId)}
+              updateArticle={updateArticle}
+              setCurrentArticleId={setCurrentArticleId}
+              reset={() => setCurrentArticleId(null)}
+              />
               <Articles 
               getArticles={getArticles}
-              articles={articles}
+              articles={articles && articles}
+              deleteArticle={deleteArticle}
+              setCurrentArticleId={setCurrentArticleId}
+              currentArticleId={currentArticleId}
               />
             </>
           } />
