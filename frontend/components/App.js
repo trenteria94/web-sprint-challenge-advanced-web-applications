@@ -144,12 +144,17 @@ export default function App() {
         { title, text, topic },
       { headers: { Authorization: token } }
     );
+    const updatedArticles = articles.map(art => 
+      art.article_id === article_id ? data.article : art
+    );
+      setArticles(updatedArticles)
+      setSpinnerOn(false)
       setMessage(data.message)
-      getArticles()
       setCurrentArticleId(null)
     }
     
     catch(err) {
+      console.log(err)
       setSpinnerOn(false)
       redirectToLogin()
     }
@@ -159,17 +164,18 @@ export default function App() {
   }
   const deleteArticle = async article_id => {
     const token = localStorage.getItem('token')
-    // ✨ implement
+    // ✨ implement filter articles 
     setMessage('')
     setSpinnerOn(true)
     try {
       const { data } = await axios.delete(`http://localhost:9000/api/articles/${article_id}`,
       { headers: { Authorization: token } }
       )
+      const filteredArticles = articles.filter(art => art.article_id !== article_id)
+      setArticles(filteredArticles)
       setMessage(data.message)
       setSpinnerOn(false)
-      setArticles(data.articles)
-      getArticles()
+      
     }
     catch(err) {
       console.log(err.data.message)
